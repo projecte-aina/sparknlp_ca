@@ -8,7 +8,7 @@ Created on Fri May 13 09:55:20 2022
 
 
 
-from transformers import TFRobertaForSequenceClassification, RobertaTokenizer 
+from transformers import TFRobertaForTokenClassification, RobertaTokenizer 
 import shutil
 MODEL_NAME = 'projecte-aina/roberta-base-ca-cased-ner'
 
@@ -19,10 +19,10 @@ tokenizer.save_pretrained('./{}_tokenizer/'.format(MODEL_NAME))
 # we can just use `from_pt` and convert PyTorch to TensorFlow
 try:
   print('try downloading TF weights')
-  model = TFRobertaForSequenceClassification.from_pretrained(MODEL_NAME)
+  model = TFRobertaForTokenClassification.from_pretrained(MODEL_NAME)
 except:
   print('try downloading PyTorch weights')
-  model = TFRobertaForSequenceClassification.from_pretrained(MODEL_NAME, from_pt=True)
+  model = TFRobertaForTokenClassification.from_pretrained(MODEL_NAME, from_pt=True)
 
 model.save_pretrained("./{}".format(MODEL_NAME), saved_model=True)
 
@@ -55,7 +55,7 @@ labels = sorted(labels, key=labels.get)
 with open(asset_path+'/labels.txt', 'w') as f:
     f.write('\n'.join(labels))
 
-TFmodelfrompath = TFRobertaForSequenceClassification.from_pretrained(MODEL_NAME)
+TFmodelfrompath = TFRobertaForTokenClassification.from_pretrained(MODEL_NAME)
 
 
 ## For Use in Spark
@@ -68,12 +68,12 @@ spark = sparknlp.start()
 
 from sparknlp.annotator import *
 
-sequenceClassifier = RoBertaForSequenceClassification\
+tokenClassifier = RoBertaForTokenClassification\
   .loadSavedModel('{}/saved_model/1'.format(MODEL_NAME), spark)\
   .setInputCols(["document",'token'])\
   .setOutputCol("class")\
   .setCaseSensitive(True)\
   .setMaxSentenceLength(128)
 
-sequenceClassifier.write().overwrite().save("./{}_spark_nlp".format(MODEL_NAME))
+tokenClassifier.write().overwrite().save("./{}_spark_nlp".format(MODEL_NAME))
 

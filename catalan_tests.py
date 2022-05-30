@@ -14,7 +14,7 @@ print("Spark NLP version: ", sparknlp.version())
 print("Apache Spark version: ", spark.version)
 
 
-
+from sparknlp.annotator import *
 from sparknlp.base import *
 
 documentAssembler = DocumentAssembler()\
@@ -22,27 +22,20 @@ documentAssembler = DocumentAssembler()\
       .setOutputCol("document")\
       .setCleanupMode("shrink_full")
 
-from sparknlp.annotator import *
-
-# we feed the document column coming from Document Assembler
-
-sentenceDetector = SentenceDetector()\
-    .setInputCols(['document'])\
-    .setOutputCol('sentences')
 
 
 
 sentencerDL = SentenceDetectorDLModel\
   .pretrained("sentence_detector_dl", "xx") \
   .setInputCols(["document"]) \
-  .setOutputCol("sentences")
+  .setOutputCol("sentence")
   
 
 
 retokenizer = RecursiveTokenizer() \
     .setInputCols(["document"]) \
     .setOutputCol("token") \
-    .setPrefixes(["’", '”', "(", "[", "l'","s'","d'","m'","L'","S'","N'","M'"]) \
+    .setPrefixes(["’", '”', "(", "[", "l'","l’","s'","s’","d’","d'","m’","m'","L'","L’","S’","S'","N’","N'","M’","M'"]) \
     .setWhitelist(["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","Dr.","Dra.","Sr.","Sra.","Srta.","núm","St.","Sta.","pl.","etc."] ) \
     .setSuffixes(["-ho","'ls","'l","'ns","'t","'m","'n","’ls","’l","’ns","’t","’m","’n","-les","-la","-lo","-li","-los","-me","-nos","-te","-vos","-se","-hi","-ne","-en",'.', ':', '%', ',', ';', '?', "'", '"', ')', ']', '!'])
 
@@ -68,15 +61,25 @@ pos = PerceptronModel.pretrained("pos_ud_ancora", "ca") \
   .setOutputCol("pos")
 
 
-#ner = RoBertaForTokenClassification.loadSavedModel("/home/crodrig1/sparknlp/ner/projecte-aina/roberta-base-ca-cased-ner_spark_nlp"
+#Per cargar per primera vegada despres de la conversió des de PyTorch 
+# ner = RoBertaForTokenClassification\
+#   .loadSavedModel('/home/crodrig1/sparknlp/sparknlp_ca/projecte-aina/roberta-base-ca-cased-ner/saved_model/1'.format("roberta-base-ca-cased-ner"), spark)\
+#   .setInputCols(["document",'token'])\
+#   .setOutputCol("ner")\
+#   .setCaseSensitive(True)\
+#   .setMaxSentenceLength(128)
 
-ner = RoBertaForTokenClassification\
-  .loadSavedModel('./ner/projecte-aina/roberta-base-ca-cased-ner/saved_model/1'.format("roberta-base-ca-cased-ner"), spark)\
-  .setInputCols(["document",'token'])\
-  .setOutputCol("ner")\
-  .setCaseSensitive(True)\
-  .setMaxSentenceLength(128)
+# Despres de save()
+# wget and unzip: 
+# https://github.com/projecte-aina/sparknlp_ca/releases/download/NER_v2/roberta-base-ca-cased-ner_spark_nlp.zip
+ner = RoBertaForTokenClassification.load("/home/crodrig1/sparknlp/sparknlp_ca/roberta-base-ca-cased-ner_spark_nlp")
+ner.setOutputCol('ner')
 
+
+nerconverter = NerConverter()\
+    .setInputCols(["document", "token", "ner"]) \
+    .setOutputCol("entities")#\
+    #.setWhiteList(['ORG','LOC','PER','MISC'])#\
 
 
 nlpPipeline = Pipeline(stages=[
@@ -86,15 +89,16 @@ nlpPipeline = Pipeline(stages=[
     normalizer,
     lemmatizer,
     pos,
-    ner
+    ner,
+    nerconverter
  ])
 
 
 
 
-text = """Veig a l'home dels Estats Units amb el telescopi.
-S'hauria d'afinar la proposta. (algú hauria de fer-ho.) parlem-ne demà, si vols, amb la Dra. Fernandez el 12/25/2022
- Vés-te’n, anem-nos-en, doncs. """
+text = "Veig a l'home dels Estats Units amb el telescopi."
+#S'hauria d'afinar la proposta. (algú hauria de fer-ho.) parlem-ne demà, si vols, amb la Dra. Fernandez el 12/25/2022
+# Vés-te’n, anem-nos-en, doncs. """
 spark_df = spark.createDataFrame([[text]]).toDF("text")
 
 doc_df = documentAssembler.transform(spark_df)
@@ -109,17 +113,25 @@ result = pipelineModel.transform(spark_df)
 
 
 import pyspark.sql.functions as F
-result_df = result.select(F.explode(F.arrays_zip(result.token.result, result.form.result, result.lemma.result, result.pos.result, result.ner.result)).alias("cols")) \
+result_df = result.select(F.explode(F.arrays_zip(result.token.result, result.form.result, result.lemma.result, result.pos.result,result.ner.result,result.entities.result)).alias("cols")) \
                   .select(F.expr("cols['0']").alias("token"),
                           F.expr("cols['1']").alias("form"),
                           F.expr("cols['2']").alias("lemma"),
                           F.expr("cols['3']").alias("pos"),
-                          F.expr("cols['4']").alias("ner") \
+                          F.expr("cols['4']").alias("ner"),
+                          F.expr("cols['5']").alias("entities")\
                               ).toPandas()
 
-result_df.head(55)
+print(result_df.head(20))
+
+from sparknlp.base import LightPipeline
+
+light_model = LightPipeline(pipelineModel)
+
+light_result = light_model.annotate("La sala del contenciós-administratiu del Tribunal Suprem espanyol ha rectificat i ha anunciat ara que revisarà l’indult als presos polítics concedits pel govern espanyol, en tant que tramitarà els recursos interposats pel PP, Ciutadans i Vox en contra.")
 
 
 
+list(zip(light_result['token'], light_result['lemma'], light_result['ner']))
 
 
