@@ -4,15 +4,20 @@
 Created on Tue May 17 10:27:14 2022
 
 @author: crodrig1
+
+Spark NLP version:  3.4.4
+Apache Spark version:  3.1.2
 """
 
 import sparknlp
 
-spark = sparknlp.start()
+spark = sparknlp.start()#spark32=True)
 
 print("Spark NLP version: ", sparknlp.version())
 print("Apache Spark version: ", spark.version)
 
+#Spark NLP version:  3.4.4
+#Apache Spark version:  3.1.2
 
 from sparknlp.annotator import *
 from sparknlp.base import *
@@ -54,7 +59,7 @@ normalizer = Normalizer() \
 lemmatizer = Lemmatizer() \
     .setInputCols(["form"]) \
     .setOutputCol("lemma") \
-    .setDictionary("/home/crodrig1/sparknlp/lemma_data/ca_lemma_dict.tsv", "\t", " ")
+    .setDictionary("/home/crodrig1/sparknlp/sparknlp_ca/ca_lemma_dict.tsv", "\t", " ")
 
 pos = PerceptronModel.pretrained("pos_ud_ancora", "ca") \
   .setInputCols(["document", "token"]) \
@@ -79,7 +84,7 @@ ner.setOutputCol('ner')
 nerconverter = NerConverter()\
     .setInputCols(["document", "token", "ner"]) \
     .setOutputCol("entities")#\
-    #.setWhiteList(['ORG','LOC','PER','MISC'])#\
+    .setWhiteList(['ORG','LOC','PER','MISC'])#\
 
 
 nlpPipeline = Pipeline(stages=[
@@ -95,10 +100,9 @@ nlpPipeline = Pipeline(stages=[
 
 
 
-
+#Aplicacion de los pipelines y visualización de los resultados
 text = "Veig a l'home dels Estats Units amb el telescopi."
-#S'hauria d'afinar la proposta. (algú hauria de fer-ho.) parlem-ne demà, si vols, amb la Dra. Fernandez el 12/25/2022
-# Vés-te’n, anem-nos-en, doncs. """
+
 spark_df = spark.createDataFrame([[text]]).toDF("text")
 
 doc_df = documentAssembler.transform(spark_df)
@@ -133,5 +137,11 @@ light_result = light_model.annotate("La sala del contenciós-administratiu del T
 
 
 list(zip(light_result['token'], light_result['lemma'], light_result['ner']))
+
+
+salida = light_model.pipeline_model.transform(spark_df).selectExpr("explode(ner)")
+
+salida.show(truncate=False)
+
 
 
