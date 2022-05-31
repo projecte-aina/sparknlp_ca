@@ -8,7 +8,7 @@ Created on Fri May 13 09:55:20 2022
 
 
 
-from transformers import TFRobertaForTokenClassification, RobertaTokenizer 
+from transformers import TFRobertaForTokenClassification, RobertaTokenizer, TFRobertaModel
 import shutil
 MODEL_NAME = 'projecte-aina/roberta-base-ca-cased-ner'
 
@@ -77,3 +77,52 @@ tokenClassifier = RoBertaForTokenClassification\
 
 tokenClassifier.write().overwrite().save("./{}_spark_nlp".format(MODEL_NAME))
 
+
+# Convert RoberTA general model
+
+MODEL_NAME = 'PlanTL-GOB-ES/roberta-base-ca'
+
+# let's keep the tokenizer variable, we need it later
+tokenizer = RobertaTokenizer.from_pretrained(MODEL_NAME)
+# let's save the tokenizer
+tokenizer.save_pretrained('./{}_tokenizer/'.format(MODEL_NAME))
+
+# just in case if there is no TF/Keras file provided in the model
+# we can just use `from_pt` and convert PyTorch to TensorFlow
+try:
+  print('try downloading TF weights')
+  model = TFRobertaModel.from_pretrained(MODEL_NAME)
+except:
+  print('try downloading PyTorch weights')
+  model = TFRobertaModel.from_pretrained(MODEL_NAME, from_pt=True)
+
+model.save_pretrained("./{}".format(MODEL_NAME), saved_model=True)
+
+
+asset_path = '/home/crodrig1/sparknlp/sparknlp_ca/PlanTL-GOB-ES/roberta-base-ca/saved_model/1/assets'.format(MODEL_NAME)
+
+
+with open('{}_tokenizer/vocab.txt'.format(MODEL_NAME), 'w') as f:
+    for item in tokenizer.get_vocab().keys():
+        f.write("%s\n" % item)
+        
+shutil.copy(MODEL_NAME+'_tokenizer/vocab.txt',asset_path)
+
+shutil.copy(MODEL_NAME+'_tokenizer/merges.txt',asset_path)
+
+#asset_path = '{}/saved_model/1/assets'.format(MODEL_NAME)
+
+
+
+
+roberta_ca = RoBertaEmbeddings.loadSavedModel(
+     '/home/crodrig1/sparknlp/sparknlp_ca/PlanTL-GOB-ES/roberta-base-ca/saved_model/1'.format(MODEL_NAME),
+     spark
+ )\
+ .setInputCols(["sentence",'token'])\
+ .setOutputCol("embeddings")\
+ .setCaseSensitive(True)\
+ .setDimension(512)\
+ .setStorageRef('roberta_base') 
+    
+roberta_ca.write().overwrite().save("/home/crodrig1/sparknlp/sparknlp_ca/PlanTL-GOB-ES/roberta-base-ca_spark_nlp".format(MODEL_NAME))
