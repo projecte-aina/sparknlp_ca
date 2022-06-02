@@ -28,26 +28,30 @@ documentAssembler = DocumentAssembler()\
       .setCleanupMode("shrink_full")
 
 
-
-
 sentencerDL = SentenceDetectorDLModel\
   .pretrained("sentence_detector_dl", "xx") \
   .setInputCols(["document"]) \
   .setOutputCol("sentence")
   
 
-embeddings = RoBertaEmbeddings.load("/home/crodrig1/sparknlp/sparknlp_ca/PlanTL-GOB-ES/roberta-base-ca_spark_nlp".format('PlanTL-GOB-ES/roberta-base-ca'))\
+embeddings = RoBertaEmbeddings.load("/home/crodrig1/sparknlp/sparknlp_ca/PlanTL-GOB-ES/roberta-base-ca_spark_nlp".format('roberta-base'))\
   .setInputCols(["sentence",'token'])\
   .setOutputCol("embeddings")\
   .setCaseSensitive(True)
 
-retokenizer = RecursiveTokenizer() \
-    .setInputCols(["document"]) \
-    .setOutputCol("token") \
-    .setPrefixes(["’", '”', "(", "[", "l'","l’","s'","s’","d’","d'","m’","m'","L'","L’","S’","S'","N’","N'","M’","M'"]) \
-    .setWhitelist(["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","Dr.","Dra.","Sr.","Sra.","Srta.","núm","St.","Sta.","pl.","etc."] ) \
-    .setSuffixes(["-ho","'ls","'l","'ns","'t","'m","'n","’ls","’l","’ns","’t","’m","’n","-les","-la","-lo","-li","-los","-me","-nos","-te","-vos","-se","-hi","-ne","-en",'.', ':', '%', ',', ';', '?', "'", '"', ')', ']', '!'])
+# retokenizer = RecursiveTokenizer() \
+#     .setInputCols(["document"]) \
+#     .setOutputCol("token") \
+#     .setPrefixes(["’", '”', "(", "[", "l'","l’","s'","s’","d’","d'","m’","m'","L'","L’","S’","S'","N’","N'","M’","M'"]) \
+#     .setWhitelist(["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","Dr.","Dra.","Sr.","Sra.","Srta.","núm","St.","Sta.","pl.","etc."] ) \
+#     .setSuffixes(["-ho","'ls","'l","'ns","'t","'m","'n","’ls","’l","’ns","’t","’m","’n","-les","-la","-lo","-li","-los","-me","-nos","-te","-vos","-se","-hi","-ne","-en",'.', ':', '%', ',', ';', '?', "'", '"', ')', ']', '!'])
 
+tokenizer = Tokenizer()# \
+    # .setInputCols(['sentence']) \
+    # .setOutputCol('token')\
+    # .setPrefixes(["’", '”', "(", "[", "l'","l’","s'","s’","d’","d'","m’","m'","L'","L’","S’","S'","N’","N'","M’","M'"]) \
+    # .setWhitelist(["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","Dr.","Dra.","Sr.","Sra.","Srta.","núm","St.","Sta.","pl.","etc."] ) \
+    # .setSuffixes(["-ho","'ls","'l","'ns","'t","'m","'n","’ls","’l","’ns","’t","’m","’n","-les","-la","-lo","-li","-los","-me","-nos","-te","-vos","-se","-hi","-ne","-en",'.', ':', '%', ',', ';', '?', "'", '"', ')', ']', '!'])
 
 
 # lemmatizer = LemmatizerModel.pretrained("lemma_spacylookup","ca") \
@@ -87,15 +91,15 @@ ner.setOutputCol('ner')
 
 nerconverter = NerConverter()\
     .setInputCols(["document", "token", "ner"]) \
-    .setOutputCol("entities")\
-    .setWhiteList(['ORG','LOC','PER','MISC'])#\
+    .setOutputCol("entities")#\
+    #.setWhiteList(['ORG','LOC','PER','MISC'])#\
 
 
 nlpPipeline = Pipeline(stages=[
     documentAssembler, 
     sentencerDL,
-    retokenizer,
-    #embeddings,
+    tokenizer,
+    embeddings,
     normalizer,
     lemmatizer,
     pos,
@@ -110,7 +114,7 @@ text = "Veig a l'home dels Estats Units amb el telescopi."
 
 spark_df = spark.createDataFrame([[text]]).toDF("text")
 
-doc_df = documentAssembler.transform(spark_df)
+#doc_df = documentAssembler.transform(spark_df)
 
 
 empty_df = spark.createDataFrame([['']]).toDF("text")
@@ -119,15 +123,16 @@ pipelineModel = nlpPipeline.fit(empty_df)
 
 result = pipelineModel.transform(spark_df)
 
-
+result.select('entities.result').show(truncate=False)
 
 import pyspark.sql.functions as F
-result_df = result.select(F.explode(F.arrays_zip(result.token.result, result.form.result, result.lemma.result, result.pos.result,result.ner.result,result.embeddings.result)).alias("cols")) \
+result_df = result.select(F.explode(F.arrays_zip(result.token.result, result.form.result, result.lemma.result, result.pos.result,result.ner.result,result.entities.result)).alias("cols")) \
                   .select(F.expr("cols['0']").alias("token"),
                           F.expr("cols['1']").alias("form"),
                           F.expr("cols['2']").alias("lemma"),
                           F.expr("cols['3']").alias("pos"),
-                          F.expr("cols['4']").alias("ner").\
+                          F.expr("cols['4']").alias("ner"),
+                          F.expr("cols['5']").alias("entities")\
                               ).toPandas()
 
 print(result_df.head(20))
@@ -140,12 +145,6 @@ light_result = light_model.annotate("La sala del contenciós-administratiu del T
 
 
 
-list(zip(light_result['token'], light_result['lemma'], light_result['ner']))
-
-
-#salida = light_model.pipeline_model.transform(spark_df).selectExpr("explode(ner)")
-
-#salida.show(truncate=False)
-
+print(list(zip(light_result['token'], light_result['lemma'], light_result['ner'], light_result['entities'])))
 
 
