@@ -94,6 +94,11 @@ nerconverter = NerConverter()\
     .setOutputCol("entities")#\
     #.setWhiteList(['ORG','LOC','PER','MISC'])#\
 
+chunker = Chunker() \
+   .setInputCols(["sentence", "pos"]) \
+   .setOutputCol("chunk") \
+   .setRegexParsers(["<DET>*<NOUN>+", "<PROPN>+"])
+   
 
 nlpPipeline = Pipeline(stages=[
     documentAssembler, 
@@ -104,7 +109,8 @@ nlpPipeline = Pipeline(stages=[
     lemmatizer,
     pos,
     ner,
-    nerconverter
+    nerconverter,
+    chunker
  ])
 
 
@@ -126,13 +132,14 @@ result = pipelineModel.transform(spark_df)
 result.select('entities.result').show(truncate=False)
 
 import pyspark.sql.functions as F
-result_df = result.select(F.explode(F.arrays_zip(result.token.result, result.form.result, result.lemma.result, result.pos.result,result.ner.result,result.entities.result)).alias("cols")) \
+result_df = result.select(F.explode(F.arrays_zip(result.token.result, result.form.result, result.lemma.result, result.pos.result,result.ner.result,result.chunk.result,result.entities.result)).alias("cols")) \
                   .select(F.expr("cols['0']").alias("token"),
                           F.expr("cols['1']").alias("form"),
                           F.expr("cols['2']").alias("lemma"),
                           F.expr("cols['3']").alias("pos"),
                           F.expr("cols['4']").alias("ner"),
-                          F.expr("cols['5']").alias("entities")\
+                          F.expr("cols['5']").alias("chunk"),
+                          F.expr("cols['6']").alias("entities")\
                               ).toPandas()
 
 print(result_df.head(20))
@@ -145,6 +152,6 @@ light_result = light_model.annotate("La sala del contenciós-administratiu del T
 
 
 
-print(list(zip(light_result['token'], light_result['lemma'], light_result['ner'], light_result['entities'])))
+print(list(zip(light_result['token'], light_result['lemma'], light_result['ner'], light_result['entities'], light_result['chunk'])))
 
 
