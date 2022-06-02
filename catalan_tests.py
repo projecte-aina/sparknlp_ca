@@ -39,6 +39,10 @@ embeddings = RoBertaEmbeddings.load("/home/crodrig1/sparknlp/sparknlp_ca/PlanTL-
   .setOutputCol("embeddings")\
   .setCaseSensitive(True)
 
+embeddingsSentence = SentenceEmbeddings() \
+    .setInputCols(["sentence", "embeddings"]) \
+    .setOutputCol("sentence_embeddings") \
+    .setPoolingStrategy("AVERAGE")
 # retokenizer = RecursiveTokenizer() \
 #     .setInputCols(["document"]) \
 #     .setOutputCol("token") \
@@ -105,6 +109,7 @@ nlpPipeline = Pipeline(stages=[
     sentencerDL,
     tokenizer,
     embeddings,
+    embeddingsSentence,
     normalizer,
     lemmatizer,
     pos,
@@ -152,6 +157,6 @@ light_result = light_model.annotate("La sala del contenciós-administratiu del T
 
 
 
-print(list(zip(light_result['token'], light_result['lemma'], light_result['ner'], light_result['entities'], light_result['chunk'])))
+print(list(zip(light_result['token'], light_result['pos'], light_result['ner'], light_result['entities'], light_result['chunk'])))
 
 
