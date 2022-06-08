@@ -32,17 +32,28 @@ sentencerDL = SentenceDetectorDLModel\
   .pretrained("sentence_detector_dl", "xx") \
   .setInputCols(["document"]) \
   .setOutputCol("sentence")
-  
 
-embeddings = RoBertaEmbeddings.load("/home/crodrig1/sparknlp/sparknlp_ca/PlanTL-GOB-ES/roberta-base-ca_spark_nlp".format('roberta-base'))\
+# sentembeddings = RoBertaSentenceEmbeddings.load("/home/crodrig1/sparknlp/sparknlp_ca/roberta-base-ca_spark_nlp").format('roberta_base')\
+#   .setInputCols(["sentence"])\
+#   .setOutputCol("sentence_embeddings")
+
+
+embeddings = RoBertaEmbeddings.load("/home/crodrig1/sparknlp/sparknlp_ca/roberta-base-ca_spark_nlp")\
   .setInputCols(["sentence",'token'])\
   .setOutputCol("embeddings")\
   .setCaseSensitive(True)
+
 
 embeddingsSentence = SentenceEmbeddings() \
     .setInputCols(["sentence", "embeddings"]) \
     .setOutputCol("sentence_embeddings") \
     .setPoolingStrategy("AVERAGE")
+
+embeddingsFinisher = EmbeddingsFinisher() \
+    .setInputCols(["sentence_embeddings"]) \
+    .setOutputCols("finished_embeddings") \
+    .setOutputAsVector(True) \
+    .setCleanAnnotations(False)
 # retokenizer = RecursiveTokenizer() \
 #     .setInputCols(["document"]) \
 #     .setOutputCol("token") \
@@ -108,9 +119,10 @@ nlpPipeline = Pipeline(stages=[
     documentAssembler, 
     sentencerDL,
     tokenizer,
+    normalizer,
     embeddings,
     embeddingsSentence,
-    normalizer,
+    embeddingsFinisher,
     lemmatizer,
     pos,
     ner,
@@ -135,6 +147,9 @@ pipelineModel = nlpPipeline.fit(empty_df)
 result = pipelineModel.transform(spark_df)
 
 result.select('entities.result').show(truncate=False)
+
+print("ShowSentence  Embeddings")
+result.selectExpr("explode(finished_embeddings) as result").show(5, 50)
 
 import pyspark.sql.functions as F
 result_df = result.select(F.explode(F.arrays_zip(result.token.result, result.form.result, result.lemma.result, result.pos.result,result.ner.result,result.chunk.result,result.entities.result)).alias("cols")) \
