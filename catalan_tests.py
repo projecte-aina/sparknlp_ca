@@ -10,8 +10,9 @@ Apache Spark version:  3.1.2
 """
 
 import sparknlp
+spark = sparknlp.start(spark32=True)
+import pandas as pd
 
-spark = sparknlp.start()#spark32=True)
 
 print("Spark NLP version: ", sparknlp.version())
 print("Apache Spark version: ", spark.version)
@@ -38,7 +39,7 @@ sentencerDL = SentenceDetectorDLModel\
 #   .setOutputCol("sentence_embeddings")
 
 
-embeddings = RoBertaEmbeddings.load("/home/crodrig1/sparknlp/sparknlp_ca/roberta-base-ca_spark_nlp")\
+embeddings = RoBertaEmbeddings.load("PlanTL-GOB-ES/roberta-base-ca_spark_nlp")\
   .setInputCols(["sentence",'token'])\
   .setOutputCol("embeddings")\
   .setCaseSensitive(True)
@@ -61,9 +62,18 @@ embeddingsFinisher = EmbeddingsFinisher() \
 #     .setWhitelist(["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","Dr.","Dra.","Sr.","Sra.","Srta.","núm","St.","Sta.","pl.","etc."] ) \
 #     .setSuffixes(["-ho","'ls","'l","'ns","'t","'m","'n","’ls","’l","’ns","’t","’m","’n","-les","-la","-lo","-li","-los","-me","-nos","-te","-vos","-se","-hi","-ne","-en",'.', ':', '%', ',', ';', '?', "'", '"', ')', ']', '!'])
 
-tokenizer = Tokenizer()# \
-    # .setInputCols(['sentence']) \
-    # .setOutputCol('token')\
+ex_list = ["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","dr.","dra.","sr.","sra.","srta.","núm.","st.","sta.","pl.","etc.", "ex."]
+ex_list_all = []
+ex_list_all.extend(ex_list)
+ex_list_all.extend([x[0].upper() + x[1:] for x in ex_list])
+ex_list_all.extend([x.upper() for x in ex_list])
+print(">>>>>>", ex_list_all)
+
+tokenizer = Tokenizer() \
+     .setInputCols(['sentence']) \
+     .setOutputCol('token')\
+     .setExceptions(ex_list_all)\
+     .setSplitChars(["-", "\'", "’"])
     # .setPrefixes(["’", '”', "(", "[", "l'","l’","s'","s’","d’","d'","m’","m'","L'","L’","S’","S'","N’","N'","M’","M'"]) \
     # .setWhitelist(["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","Dr.","Dra.","Sr.","Sra.","Srta.","núm","St.","Sta.","pl.","etc."] ) \
     # .setSuffixes(["-ho","'ls","'l","'ns","'t","'m","'n","’ls","’l","’ns","’t","’m","’n","-les","-la","-lo","-li","-los","-me","-nos","-te","-vos","-se","-hi","-ne","-en",'.', ':', '%', ',', ';', '?', "'", '"', ')', ']', '!'])
@@ -82,7 +92,7 @@ normalizer = Normalizer() \
 lemmatizer = Lemmatizer() \
     .setInputCols(["form"]) \
     .setOutputCol("lemma") \
-    .setDictionary("/home/crodrig1/sparknlp/sparknlp_ca/ca_lemma_dict.tsv", "\t", " ")
+    .setDictionary("ca_lemma_dict.tsv", "\t", " ")
 
 pos = PerceptronModel.pretrained("pos_ud_ancora", "ca") \
   .setInputCols(["document", "token"]) \
@@ -100,7 +110,7 @@ pos = PerceptronModel.pretrained("pos_ud_ancora", "ca") \
 # Despres de save()
 # wget and unzip: 
 # https://github.com/projecte-aina/sparknlp_ca/releases/download/NER_v2/roberta-base-ca-cased-ner_spark_nlp.zip
-ner = RoBertaForTokenClassification.load("/home/crodrig1/sparknlp/sparknlp_ca/roberta-base-ca-cased-ner_spark_nlp")
+ner = RoBertaForTokenClassification.load("projecte-aina/roberta-base-ca-cased-ner_spark_nlp")
 ner.setOutputCol('ner')
 
 
@@ -152,26 +162,32 @@ print("ShowSentence  Embeddings")
 result.selectExpr("explode(finished_embeddings) as result").show(5, 50)
 
 import pyspark.sql.functions as F
-result_df = result.select(F.explode(F.arrays_zip(result.token.result, result.form.result, result.lemma.result, result.pos.result,result.ner.result,result.chunk.result,result.entities.result)).alias("cols")) \
-                  .select(F.expr("cols['0']").alias("token"),
-                          F.expr("cols['1']").alias("form"),
-                          F.expr("cols['2']").alias("lemma"),
-                          F.expr("cols['3']").alias("pos"),
-                          F.expr("cols['4']").alias("ner"),
-                          F.expr("cols['5']").alias("chunk"),
-                          F.expr("cols['6']").alias("entities")\
-                              ).toPandas()
+#result_df = result.select(F.explode(F.arrays_zip(result.token.result, result.form.result, result.lemma.result, result.pos.result,result.ner.result,result.chunk.result,result.entities.result)).alias("cols")) \
+                  #.select(F.expr("cols['0']").alias("token"),
+                          #F.expr("cols['1']").alias("form"),
+                          #F.expr("cols['2']").alias("lemma"),
+                          #F.expr("cols['3']").alias("pos"),
+                          #F.expr("cols['4']").alias("ner"),
+                          #F.expr("cols['5']").alias("chunk"),
+                          #F.expr("cols['6']").alias("entities")\
+                              #).toPandas()
 
-print(result_df.head(20))
+#print(result_df.head(20))
 
 from sparknlp.base import LightPipeline
 
 light_model = LightPipeline(pipelineModel)
-
-light_result = light_model.annotate("La sala del contenciós-administratiu del Tribunal Suprem espanyol ha rectificat i ha anunciat ara que revisarà l’indult als presos polítics concedits pel govern espanyol, en tant que tramitarà els recursos interposats pel PP, Ciutadans i Vox en contra.")
-
-
-
-print(list(zip(light_result['token'], light_result['pos'], light_result['ner'], light_result['entities'], light_result['chunk'])))
+text = "La sala del contenciós-administratiu del Tribunal Suprem espanyol ha rectificat i ha anunciat ara que revisarà l’indult als presos polítics concedits pel govern espanyol, en tant que tramitarà els recursos interposats pel PP, Ciutadans i Vox en contra."
+text = "el 26 de set. anem al c/ de l'arbre del sr. Minó i el Sr. Pepu. Anem-nos-en d'aquí, dona-n'hi tres."
+light_result = light_model.annotate(text)
 
 
+
+#print(list(zip(light_result['token'], light_result['pos'], light_result['ner'], light_result['entities'], light_result['chunk'])))
+
+
+result = pd.DataFrame(zip(light_result['token'], light_result['lemma'], light_result['pos'], light_result['ner']), columns = ["token", "lemma", "pos", "ner"])
+
+print(result)
+print("entites:", light_result['entities'])
+print("chunk:", light_result['chunk'])
