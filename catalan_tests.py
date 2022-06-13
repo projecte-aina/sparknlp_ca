@@ -10,7 +10,7 @@ Apache Spark version:  3.1.2
 """
 
 import sparknlp
-spark = sparknlp.start(spark32=True)
+spark = sparknlp.start()#spark32=True)
 import pandas as pd
 
 
@@ -62,21 +62,21 @@ embeddingsFinisher = EmbeddingsFinisher() \
 #     .setWhitelist(["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","Dr.","Dra.","Sr.","Sra.","Srta.","núm","St.","Sta.","pl.","etc."] ) \
 #     .setSuffixes(["-ho","'ls","'l","'ns","'t","'m","'n","’ls","’l","’ns","’t","’m","’n","-les","-la","-lo","-li","-los","-me","-nos","-te","-vos","-se","-hi","-ne","-en",'.', ':', '%', ',', ';', '?', "'", '"', ')', ']', '!'])
 
-ex_list = ["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","dr.","dra.","sr.","sra.","srta.","núm.","st.","sta.","pl.","etc.", "ex."]
+ex_list = ["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","dr.","dra.","sr.","sra.","srta.","núm.","st.","sta.","pl.","etc.", "ex."]#,"’", '”', "(", "[", "l'","l’","s'","s’","d’","d'","m’","m'","L'","L’","S’","S'","N’","N'","M’","M'"]
 ex_list_all = []
 ex_list_all.extend(ex_list)
 ex_list_all.extend([x[0].upper() + x[1:] for x in ex_list])
 ex_list_all.extend([x.upper() for x in ex_list])
 print(">>>>>>", ex_list_all)
-
+data = spark.createDataFrame([["el 26 de set. anem al c/ de l'arbre del sr. Minó i el Sr. Pepu. Anem-nos-en d'aquí, dona-n'hi tres."]]).toDF("text")
 tokenizer = Tokenizer() \
      .setInputCols(['sentence']) \
-     .setOutputCol('token')\
-     .setExceptions(ex_list_all)\
-     .setSplitChars(["-", "\'", "’"])
-    # .setPrefixes(["’", '”', "(", "[", "l'","l’","s'","s’","d’","d'","m’","m'","L'","L’","S’","S'","N’","N'","M’","M'"]) \
-    # .setWhitelist(["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","Dr.","Dra.","Sr.","Sra.","Srta.","núm","St.","Sta.","pl.","etc."] ) \
-    # .setSuffixes(["-ho","'ls","'l","'ns","'t","'m","'n","’ls","’l","’ns","’t","’m","’n","-les","-la","-lo","-li","-los","-me","-nos","-te","-vos","-se","-hi","-ne","-en",'.', ':', '%', ',', ';', '?', "'", '"', ')', ']', '!'])
+     .setOutputCol('token') \
+     .setSuffixPattern("([^\s\w]?)([\-hi]*)\z")
+
+#tokenizer.setSuffixPattern("([^\s\w]?)([\-hi]*)\z")#"(ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)\z")
+
+##https://nlp.johnsnowlabs.com/api/python/reference/autosummary/sparknlp.annotator.Tokenizer.html
 
 
 # lemmatizer = LemmatizerModel.pretrained("lemma_spacylookup","ca") \
@@ -110,7 +110,7 @@ pos = PerceptronModel.pretrained("pos_ud_ancora", "ca") \
 # Despres de save()
 # wget and unzip: 
 # https://github.com/projecte-aina/sparknlp_ca/releases/download/NER_v2/roberta-base-ca-cased-ner_spark_nlp.zip
-ner = RoBertaForTokenClassification.load("projecte-aina/roberta-base-ca-cased-ner_spark_nlp")
+ner = RoBertaForTokenClassification.load("./roberta-base-ca-cased-ner_spark_nlp")
 ner.setOutputCol('ner')
 
 
