@@ -22,7 +22,22 @@ ex_list_all.extend([x[0].upper() + x[1:] for x in ex_list])
 ex_list_all.extend([x.upper() for x in ex_list])
 
 tokenizer = Tokenizer().setInputCols(["document"]).setOutputCol("token") \
-    .setSuffixPattern("([^\s\w]?)('hi|-en)\z").setExceptions(ex_list_all).fit(data)
+    .setSuffixPattern("([^\s\w]?)('hi|ls|'l|'ns|'t|'m|'n|-n|-en|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)\z")\
+    .setExceptions(ex_list_all)#.fit(data)
+tokenizer.addInfixPattern("([^\s\w]?)(-nos)")
+
+pipeline = Pipeline().setStages([documentAssembler, tokenizer]).fit(data)
+
+result = pipeline.transform(data)
+
+result.selectExpr("token.result").show(truncate=False)
+
+
+tokenizer = Tokenizer().setInputCols(["document"]).setOutputCol("token") \
+    .setSuffixPattern("([^\s\w]?)('hi|ls|'l|'ns|'t|'m|'n|-n|-en|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)\z")\
+    .setInfixPatterns(["([^\s\w]?)(-nos)"]) \
+    .setExceptions(ex_list_all)#.fit(data)
+
 
 pipeline = Pipeline().setStages([documentAssembler, tokenizer]).fit(data)
 

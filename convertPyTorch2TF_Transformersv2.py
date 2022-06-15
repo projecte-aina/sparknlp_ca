@@ -80,7 +80,7 @@ tokenClassifier.write().overwrite().save("./{}_spark_nlp".format(MODEL_NAME))
 
 # Convert RoberTA general model
 
-MODEL_NAME = 'PlanTL-GOB-ES/roberta-base-ca'
+MODEL_NAME = 'projecte-aina/roberta-base-ca-v2'
 
 # let's keep the tokenizer variable, we need it later
 #tokenizer = RobertaTokenizer.from_pretrained(MODEL_NAME)
@@ -99,11 +99,14 @@ except:
 
 model.save_pretrained("./{}".format(MODEL_NAME), saved_model=True)
 
+asset_path = '{}/saved_model/1/assets'.format(MODEL_NAME)
+#asset_path = '/home/crodrig1/sparknlp/sparknlp_ca/PlanTL-GOB-ES/roberta-base-ca/saved_model/1/assets'.format('roberta-base')
 
-asset_path = '/home/crodrig1/sparknlp/sparknlp_ca/PlanTL-GOB-ES/roberta-base-ca/saved_model/1/assets'.format('roberta-base')
 
-
-with open('/home/crodrig1/sparknlp/sparknlp_ca/PlanTL-GOB-ES/roberta-base-ca_tokenizer/vocab.txt'.format('roberta-base'), 'w') as f:
+# with open('/home/crodrig1/sparknlp/sparknlp_ca/PlanTL-GOB-ES/roberta-base-ca_tokenizer/vocab.txt'.format('roberta-base'), 'w') as f:
+#     for item in tokenizer.get_vocab().keys():
+#         f.write("%s\n" % item)
+with open('{}_tokenizer/vocab.txt'.format(MODEL_NAME), 'w') as f:
     for item in tokenizer.get_vocab().keys():
         f.write("%s\n" % item)
         
@@ -117,7 +120,7 @@ shutil.copy(MODEL_NAME+'_tokenizer/merges.txt',asset_path)
 
 
 roberta_ca = RoBertaEmbeddings.loadSavedModel(
-     '/home/crodrig1/sparknlp/sparknlp_ca/PlanTL-GOB-ES/roberta-base-ca/saved_model/1'.format('roberta-base'),
+     '{}/saved_model/1'.format('roberta-base'),
      spark
  )\
  .setInputCols(["sentence",'token'])\
@@ -126,4 +129,4 @@ roberta_ca = RoBertaEmbeddings.loadSavedModel(
  .setDimension(512)\
  .setStorageRef('roberta_base_ca') 
     
-roberta_ca.write().overwrite().save("/home/crodrig1/sparknlp/sparknlp_ca/PlanTL-GOB-ES/roberta-base-ca_spark_nlp".format('roberta-base'))
+roberta_ca.write().overwrite().save("./{}_spark_nlp".format('roberta-base'))

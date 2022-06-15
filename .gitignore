@@ -133,3 +133,9 @@ roberta-base-ca_spark_nlp/metadata/_SUCCESS
 roberta-base-ca_spark_nlp/metadata/part-00000
 roberta-base-ca_spark_nlp/roberta_tensorflow
 ca-roberta.ipynb
+.ipynb_checkpoints/tokenizer_notebook-checkpoint.ipynb
+projecte-aina/roberta-base-ca-v2_tokenizer/merges.txt
+projecte-aina/roberta-base-ca-v2_tokenizer/special_tokens_map.json
+projecte-aina/roberta-base-ca-v2_tokenizer/tokenizer_config.json
+projecte-aina/roberta-base-ca-v2_tokenizer/vocab.json
+tokenizer_notebook.ipynb

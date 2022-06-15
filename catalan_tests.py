@@ -67,7 +67,7 @@ ex_list_all = []
 ex_list_all.extend(ex_list)
 ex_list_all.extend([x[0].upper() + x[1:] for x in ex_list])
 ex_list_all.extend([x.upper() for x in ex_list])
-print(">>>>>>", ex_list_all)
+#print(">>>>>>", ex_list_all)
 data = spark.createDataFrame([["el 26 de set. anem al c/ de l'arbre del sr. Minó i el Sr. Pepu. Anem-nos-en d'aquí, dona-n'hi tres."]]).toDF("text")
 tokenizer = Tokenizer() \
      .setInputCols(['sentence']) \
@@ -89,6 +89,10 @@ normalizer = Normalizer() \
     .setLowercase(True)\
     .setCleanupPatterns(["\n "])
 
+stop_words = StopWordsCleaner.pretrained("stopwords_iso","ca") \
+    .setInputCols(["token"]) \
+    .setOutputCol("cleanTokens")
+    
 lemmatizer = Lemmatizer() \
     .setInputCols(["form"]) \
     .setOutputCol("lemma") \
@@ -130,6 +134,7 @@ nlpPipeline = Pipeline(stages=[
     sentencerDL,
     tokenizer,
     normalizer,
+    stop_words,
     embeddings,
     embeddingsSentence,
     embeddingsFinisher,
