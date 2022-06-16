@@ -70,9 +70,11 @@ ex_list_all.extend([x.upper() for x in ex_list])
 #print(">>>>>>", ex_list_all)
 data = spark.createDataFrame([["el 26 de set. anem al c/ de l'arbre del sr. Minó i el Sr. Pepu. Anem-nos-en d'aquí, dona-n'hi tres."]]).toDF("text")
 tokenizer = Tokenizer() \
-     .setInputCols(['sentence']) \
-     .setOutputCol('token') \
-     .setSuffixPattern("([^\s\w]?)([\-hi]*)\z")
+    .setInputCols(['sentence']).setOutputCol('token') \
+    .setSuffixPattern("(\w*)(-la|-lo|-les|-los|-hi|-en|-ho|'n|'l|'ls|'m|'t|hi|ho|-LA|-LO|-LES|-LOS|-HI|-EN|-HO|'N|'L|'LS|'M|'T|HI|HO|)(.|,|;|:|!|\?|\)|\"|)\z") \
+    .setInfixPatterns(["^(d'|l'|D'|L')(\w*)", "^(d|p|D|P)(el|els|EL|ELS)?$", "^(a|A)(l|ls|L|LS)?$", "(\w*)(-la|-lo|-les|-los|-nos|-vos|-te|-hi|-en|-ho|-n'|-l'|'ls|-m'|-t'|-hi|-ho|-LA|-LO|-LES|-LOS|-NOS|-VOS|-TE|-HI|-EN|-HO|-N'|-L'|'LS|-M'|-T'|-HI|-HO|)"]) \
+    .setContextChars(['.', ',', ';', ':', '!', '?', '*', '-', '(', ')', '"', "'"]) \
+    .setExceptions(ex_list_all)#.fit(data)
 
 #tokenizer.setSuffixPattern("([^\s\w]?)([\-hi]*)\z")#"(ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)\z")
 
@@ -161,12 +163,12 @@ pipelineModel = nlpPipeline.fit(empty_df)
 
 result = pipelineModel.transform(spark_df)
 
-result.select('entities.result').show(truncate=False)
+#result.select('entities.result').show(truncate=False)
 
-print("ShowSentence  Embeddings")
-result.selectExpr("explode(finished_embeddings) as result").show(5, 50)
+# print("ShowSentence  Embeddings")
+# result.selectExpr("explode(finished_embeddings) as result").show(5, 50)
 
-import pyspark.sql.functions as F
+#import pyspark.sql.functions as F
 #result_df = result.select(F.explode(F.arrays_zip(result.token.result, result.form.result, result.lemma.result, result.pos.result,result.ner.result,result.chunk.result,result.entities.result)).alias("cols")) \
                   #.select(F.expr("cols['0']").alias("token"),
                           #F.expr("cols['1']").alias("form"),

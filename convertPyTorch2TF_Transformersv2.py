@@ -90,12 +90,13 @@ tokenizer.save_pretrained('./{}_tokenizer/'.format(MODEL_NAME))
 
 # just in case if there is no TF/Keras file provided in the model
 # we can just use `from_pt` and convert PyTorch to TensorFlow
+MODEL = "/home/crodrig1/sparknlp/roberta-base-ca-v2/"
 try:
   print('try downloading TF weights')
   model = TFRobertaModel.from_pretrained(MODEL_NAME)
 except:
   print('try downloading PyTorch weights')
-  model = TFRobertaModel.from_pretrained(MODEL_NAME, from_pt=True)
+  model = TFRobertaModel.from_pretrained(MODEL, from_pt=True)
 
 model.save_pretrained("./{}".format(MODEL_NAME), saved_model=True)
 

@@ -139,3 +139,11 @@ projecte-aina/roberta-base-ca-v2_tokenizer/special_tokens_map.json
 projecte-aina/roberta-base-ca-v2_tokenizer/tokenizer_config.json
 projecte-aina/roberta-base-ca-v2_tokenizer/vocab.json
 tokenizer_notebook.ipynb
+projecte-aina/roberta-base-ca-v2/config.json
+projecte-aina/roberta-base-ca-v2/saved_model/1/assets/merges.txt
+projecte-aina/roberta-base-ca-v2/saved_model/1/assets/vocab.txt
+projecte-aina/roberta-base-ca-v2/saved_model/1/saved_model.pb
+projecte-aina/roberta-base-ca-v2/saved_model/1/variables/variables.data-00000-of-00001
+projecte-aina/roberta-base-ca-v2/saved_model/1/variables/variables.index
+projecte-aina/roberta-base-ca-v2/tf_model.h5
+projecte-aina/roberta-base-ca-v2_tokenizer/vocab.txt
