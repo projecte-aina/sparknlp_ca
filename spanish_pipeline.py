@@ -74,7 +74,7 @@ stop_words = StopWordsCleaner.pretrained("stopwords_iso","es") \
     
 lemmatizer = LemmatizerModel.pretrained("lemma_ancora", "es").setInputCols(["sentence", "token"]).setOutputCol("lemma")
 
-pos = RoBertaForTokenClassification.pretrained("roberta_pos_roberta_large_bne_capitel_pos","es") \
+pos = PerceptronModel.pretrained("pos_ancora", "es")\
     .setInputCols(["sentence", "token"]) \
     .setOutputCol("pos")
 
@@ -139,7 +139,7 @@ light_result = light_model.annotate(text)
 #print(list(zip(light_result['token'], light_result['pos'], light_result['ner'], light_result['entities'], light_result['chunk'])))
 
 
-result = pd.DataFrame(zip(light_result['token'], light_result['lemma'], light_result['pos'], light_result['ner'], light_result['entities']), columns = ["token", "lemma", "pos", "ner","entities"])
+result = pd.DataFrame(zip(light_result['token'], light_result['lemma'], light_result['pos'], light_result['ner']), columns = ["token", "lemma", "pos", "ner"])
 
 print(result)
 print("entites:", light_result['entities'])
