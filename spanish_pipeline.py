@@ -92,7 +92,7 @@ nerconverter = NerConverter()\
 chunker = Chunker() \
    .setInputCols(["sentence", "pos"]) \
    .setOutputCol("chunk") \
-   .setRegexParsers(["<DET>*<NOUN>+", "<PROPN>+"])
+   .setRegexParsers(["<DET>*<NOUN><NOUN>+", "<PROPN>+"])
    
 
 nlpPipeline = Pipeline(stages=[
@@ -107,8 +107,8 @@ nlpPipeline = Pipeline(stages=[
     lemmatizer,
     pos,
     ner,
-    nerconverter#,
-#    chunker
+    nerconverter,
+    chunker
  ])
 
 
@@ -143,4 +143,4 @@ result = pd.DataFrame(zip(light_result['token'], light_result['lemma'], light_re
 
 print(result)
 print("entites:", light_result['entities'])
-#print("chunk:", light_result['chunk'])
+print("chunk:", light_result['chunk'])
