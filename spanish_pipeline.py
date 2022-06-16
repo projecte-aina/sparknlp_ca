@@ -107,8 +107,8 @@ nlpPipeline = Pipeline(stages=[
     lemmatizer,
     pos,
     ner,
-    nerconverter,
-    chunker
+    nerconverter#,
+#    chunker
  ])
 
 
