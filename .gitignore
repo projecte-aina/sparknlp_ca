@@ -147,3 +147,48 @@ projecte-aina/roberta-base-ca-v2/saved_model/1/variables/variables.data-00000-of
 projecte-aina/roberta-base-ca-v2/saved_model/1/variables/variables.index
 projecte-aina/roberta-base-ca-v2/tf_model.h5
 projecte-aina/roberta-base-ca-v2_tokenizer/vocab.txt
+ca_ancora-ud-test.conll
+ca_ancora-ud-test.conllu
+ca_ancora-ud-train+dev.pos.model/metadata/._SUCCESS.crc
+ca_ancora-ud-train+dev.pos.model/metadata/.part-00000.crc
+ca_ancora-ud-train+dev.pos.model/metadata/_SUCCESS
+ca_ancora-ud-train+dev.pos.model/metadata/part-00000
+ca_ancora-ud-train+dev.pos.model/stages/0_DocumentAssembler_d4f602d131ab/metadata/._SUCCESS.crc
+ca_ancora-ud-train+dev.pos.model/stages/0_DocumentAssembler_d4f602d131ab/metadata/.part-00000.crc
+ca_ancora-ud-train+dev.pos.model/stages/0_DocumentAssembler_d4f602d131ab/metadata/_SUCCESS
+ca_ancora-ud-train+dev.pos.model/stages/0_DocumentAssembler_d4f602d131ab/metadata/part-00000
+ca_ancora-ud-train+dev.pos.model/stages/1_SentenceDetectorDLModel_8aaebf7e098e/.generic_classifier_tensorflow.crc
+ca_ancora-ud-train+dev.pos.model/stages/1_SentenceDetectorDLModel_8aaebf7e098e/generic_classifier_tensorflow
+ca_ancora-ud-train+dev.pos.model/stages/1_SentenceDetectorDLModel_8aaebf7e098e/metadata/._SUCCESS.crc
+ca_ancora-ud-train+dev.pos.model/stages/1_SentenceDetectorDLModel_8aaebf7e098e/metadata/.part-00000.crc
+ca_ancora-ud-train+dev.pos.model/stages/1_SentenceDetectorDLModel_8aaebf7e098e/metadata/_SUCCESS
+ca_ancora-ud-train+dev.pos.model/stages/1_SentenceDetectorDLModel_8aaebf7e098e/metadata/part-00000
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/fields/rules/._SUCCESS.crc
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/fields/rules/.part-00000.crc
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/fields/rules/.part-00001.crc
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/fields/rules/.part-00002.crc
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/fields/rules/.part-00003.crc
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/fields/rules/_SUCCESS
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/fields/rules/part-00000
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/fields/rules/part-00001
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/fields/rules/part-00002
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/fields/rules/part-00003
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/metadata/._SUCCESS.crc
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/metadata/.part-00000.crc
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/metadata/_SUCCESS
+ca_ancora-ud-train+dev.pos.model/stages/2_REGEX_TOKENIZER_be8a3caa9d49/metadata/part-00000
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/fields/POS Model/._SUCCESS.crc
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/fields/POS Model/.part-00000.crc
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/fields/POS Model/.part-00001.crc
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/fields/POS Model/.part-00002.crc
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/fields/POS Model/.part-00003.crc
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/fields/POS Model/_SUCCESS
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/fields/POS Model/part-00000
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/fields/POS Model/part-00001
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/fields/POS Model/part-00002
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/fields/POS Model/part-00003
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/metadata/._SUCCESS.crc
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/metadata/.part-00000.crc
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/metadata/_SUCCESS
+ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/metadata/part-00000
+test_output.csv
