@@ -72,13 +72,12 @@ ex_list_all.extend(ex_list)
 ex_list_all.extend([x[0].upper() + x[1:] for x in ex_list])
 ex_list_all.extend([x.upper() for x in ex_list])
 
-tokenizer = Tokenizer() \
-    .setInputCols(['sentence']).setOutputCol('token') \
-    .setContextChars(['.', ',', ';', ':', '!', '?', '*', '-', '(', ')', '"', "'", "«", "»"]) \
-    .setSuffixPattern("([A-zÀ-ú]*)(-la|-lo|-les|-los|-hi|-en|-ho|'n|'l|'ls|'m|'t|hi|ho|-LA|-LO|-LES|-LOS|-HI|-EN|-HO|'N|'L|'LS|'M|'T|HI|HO|)(.|,|;|:|!|\?|\)|\", »|)\z") \
-    .setPrefixPattern("\A(’|”|(|[|l'|l’|s'|s’|d’|d'|m’|m'|L'|L’|S’|S'|N’|N'|M’|M')([A-zÀ-ú]*)") \
-    .setInfixPatterns(["(\"|«|¿|\(|^)(d'|l'|D'|L')([A-zÀ-ú]*)", "(\"|«|¿|\(|^)(d|p|D|P)(el|els|EL|ELS)$", "(\"|«|¿|\(|^)(a|A)(l|ls|L|LS)$", "([A-zÀ-ú]*)(-la|-lo|-les|-los|-nos|-vos|-te|-hi|-en|-ho|-n'|-l'|'ls|-m'|-t'|-hi|-ho|-LA|-LO|-LES|-LOS|-NOS|-VOS|-TE|-HI|-EN|-HO|-N'|-L'|'LS|-M'|-T'|-HI|-HO|)"]) \
-    .setExceptions(ex_list_all)
+# tokenizer = Tokenizer() \
+#     .setInputCols(['sentence']).setOutputCol('token') \
+#     .setContextChars(['.', ',', ';', ':', '!', '?', '*', '-', '(', ')', '"', "'", "«", "»"])\
+#     .setSuffixPattern("([A-zÀ-ú]*)(-la|-lo|-les|-los|-hi|-en|-ho|'n|'l|'ls|'m|'t|hi|ho|-LA|-LO|-LES|-LOS|-HI|-EN|-HO|'N|'L|'LS|'M|'T|HI|HO|)(.|,|;|:|!|\?|\)|\", »|)\z")\
+#     .setInfixPatterns(["(\"|«|¿|\(|^)(d'|l'|D'|L')([A-zÀ-ú]*)", "(\"|«|¿|\(|^)(d|p|D|P)(el|els|EL|ELS)$", "(\"|«|¿|\(|^)(a|A)(l|ls|L|LS)$", "([A-zÀ-ú]*)(-la|-lo|-les|-los|-nos|-vos|-te|-hi|-en|-ho|-n'|-l'|'ls|-m'|-t'|-hi|-ho|-LA|-LO|-LES|-LOS|-NOS|-VOS|-TE|-HI|-EN|-HO|-N'|-L'|'LS|-M'|-T'|-HI|-HO|)"]) \
+#     .setExceptions(ex_list_all)
 # ex_list = ["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","dr.","dra.","sr.","sra.","srta.","núm.","st.","sta.","pl.","etc.", "ex."]#,"’", '”', "(", "[", "l'","l’","s'","s’","d’","d'","m’","m'","L'","L’","S’","S'","N’","N'","M’","M'"]
 # ex_list_all = []
 # ex_list_all.extend(ex_list)
@@ -92,7 +91,9 @@ data = spark.createDataFrame([["A partir d'aquest any, la incidència ha anat ba
 #     .setInfixPatterns(["^(d'|l'|D'|L')(\w*)", "^(d|p|D|P)(el|els|EL|ELS)?$", "^(a|A)(l|ls|L|LS)?$", "(\w*)(-la|-lo|-les|-los|-nos|-vos|-te|-hi|-en|-ho|-n'|-l'|'ls|-m'|-t'|-hi|-ho|-LA|-LO|-LES|-LOS|-NOS|-VOS|-TE|-HI|-EN|-HO|-N'|-L'|'LS|-M'|-T'|-HI|-HO|)"]) \
 #     .setContextChars(['.', ',', ';', ':', '!', '?', '*', '-', '(', ')', '"', "'"]) \
 #     .setExceptions(ex_list_all)#.fit(data)
-
+tokenizer = Tokenizer() \
+    .setInputCols(['sentence']).setOutputCol('token')\
+    .setInfixPatterns(["(\w+)(-\w+)", "(l'|l'|s'|s'|d'|d'|m'|m'|L'|L'|S'|S'|N'|N'|M'|M')(\w+)", "(\w+)(\.|,)"])
 #tokenizer.setSuffixPattern("([^\s\w]?)([\-hi]*)\z")#"(ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)\z")
 
 ##https://nlp.johnsnowlabs.com/api/python/reference/autosummary/sparknlp.annotator.Tokenizer.html
@@ -179,7 +180,7 @@ spark_df = spark.createDataFrame([[text]]).toDF("text")
 
 empty_df = spark.createDataFrame([['']]).toDF("text")
 pipelineModel = nlpPipeline.fit(empty_df)
-pipelineModel.write().overwrite().save("/home/crodrig1/sparknlp/pipeline_md_ca")
+#pipelineModel.write().overwrite().save("/home/crodrig1/sparknlp/pipeline_ca")
 
 result = pipelineModel.transform(spark_df)
 
@@ -188,25 +189,22 @@ result = pipelineModel.transform(spark_df)
 # print("ShowSentence  Embeddings")
 # result.selectExpr("explode(finished_embeddings) as result").show(5, 50)
 
-import pyspark.sql.functions as F
-result_df = result.select(F.explode(F.arrays_zip(result.token.result, result.form.result, result.lemma.result, result.pos.result,result.ner.result,result.chunk.result,result.entities.result)).alias("cols")) \
-                  .select(F.expr("cols['0']").alias("token"),
-                          F.expr("cols['1']").alias("form"),
-                          F.expr("cols['2']").alias("lemma"),
-                          F.expr("cols['3']").alias("pos"),
-                          F.expr("cols['4']").alias("ner"),
-                          F.expr("cols['5']").alias("chunk"),
-                          F.expr("cols['6']").alias("entities")\
-                              ).toPandas()
-print(result_df)
+# import pyspark.sql.functions as F
+# result_df = result.select(F.explode(F.arrays_zip(result.token.result, result.form.result, result.lemma.result, result.pos.result,result.ner.result,result.chunk.result,result.entities.result)).alias("cols")) \
+#                   .select(F.expr("cols['0']").alias("token"),
+#                           F.expr("cols['1']").alias("form"),
+#                           F.expr("cols['2']").alias("lemma"),
+#                           F.expr("cols['3']").alias("pos"),
+#                           F.expr("cols['4']").alias("ner"),
+#                           F.expr("cols['5']").alias("chunk"),
+#                           F.expr("cols['6']").alias("entities")\
+#                               ).toPandas()
+# print(result_df)
 from sparknlp.base import LightPipeline
 
 light_model = LightPipeline(pipelineModel)
 
-#light_model.write().overwrite().save("/home/crodrig1/sparknlp/pipeline_ca_lm")
-#text = "La sala del contenciós-administratiu del Tribunal Suprem espanyol ha rectificat i ha anunciat ara que revisarà l’indult als presos polítics concedits pel govern espanyol, en tant que tramitarà els recursos interposats pel PP, Ciutadans i Vox en contra."
-#text = "el 26 de set. anem al c/ de l'arbre del sr. Minó i el Sr. Pepu. Anem-nos-en d'aquí, dona-n'hi tres."
-#text = "venien (del delta) a buscar l'aigua. anem-nos-en de la casa. ella."
+
 light_result = light_model.annotate(text)
 
 
@@ -217,20 +215,94 @@ light_result = light_model.annotate(text)
 result = pd.DataFrame(zip(light_result['token'], light_result['lemma'], light_result['form'], light_result['pos'], light_result['ner']), columns = ["token", "lemma","form", "pos", "ner"])
 
 print(result)
-# print("entites:", light_result['entities'])
-# print("chunk:", light_result['chunk'])
-
-result.to_csv("test_output.csv",'\t')
-
-# from sparknlp.training import CoNLLU
-
-# conllDataSet = CoNLLU().readDataset(spark, "ca_ancora-ud-test.conllu")
-# conllDataSet.selectExpr(
-#     "text",
-#     "form.result as form",
-#     "upos.result as pos",
-#     "ner.result as ner",
-#     "lemma.result as lemma"
-# ).show(1, False)
 
 
+newdata = {}
+
+
+frases = open("ca_ancora-ud-test.conll").read().split("\n\n")
+
+def dicToks(toks):
+    token = {}
+    pos = {}
+    ner = {}
+    lemma = {}
+    i = 0
+    for t,l,p,n in toks:
+        token[i] = t
+        lemma[i] = l 
+        pos[i] = p
+        ner[i] = n
+        i += 1
+    return {'token':token,'lemma':lemma,'pos':pos,'ner':ner}
+    
+
+for each in frases:
+    tokens = []
+    for line in each.split("\n"):
+        if line.startswith("# sent_id = "):
+            idx = line[12:]
+        elif line.startswith("# text = "):
+            s = line[9:]
+        elif line.startswith("# orig_file_sentence"):
+            pass
+        elif line == '':
+            pass
+        else:
+            tokens.append(line.split("\t"))
+    newdata[idx] = (s,tokens)
+from nltk.metrics.scores import accuracy
+def measure(label,dtok,rd):
+    score = None
+    # if len(dtok[label]) != len(rd[label]):
+    #     print("Mismatched Number of Tokens")
+    reference = list(dtok[label].values())
+    test = list(rd[label].values())
+    try:
+        score = accuracy(reference, test)
+    except ValueError:
+        #print("Mismatched Number of Tokens")
+        referencet = list(dtok["token"].values())
+        testt = list(rd["token"].values())
+        for n in range(len(referencet)):
+            if referencet[n] != testt[n]:
+                print(referencet[n],testt[n])
+                return None
+    return score
+
+root = "./tests/"
+#from nltk.metrics.scores import accuracy
+token = []
+pos = []
+ner = []
+lemma = []
+tokerrors = []
+m = 0
+for k in list(newdata.keys()):
+    sentence, toks = newdata[k]  
+    dtok = dicToks(toks)
+    light_result = light_model.annotate(sentence)
+    result = pd.DataFrame(zip(light_result['token'], light_result['lemma'], light_result['pos'], light_result['ner']), columns = ["token", "lemma", "pos", "ner"])
+    #print(result)
+    rd = result.to_dict()
+    referencet = list(dtok["token"].values())
+    testt = list(rd["token"].values())
+    for n in range(len(referencet)):
+        if referencet[n] != testt[n]:
+            tokerrors.append((referencet[n],testt[n]))
+            break
+    score = measure("token",dtok,rd)
+    if score:
+        token.append(score)
+    else:
+        m += 1
+    #list(dtok['pos'].values())
+    
+from collections import Counter
+tokenerr = Counter(tokerrors)
+print(tokenerr.most_common(20))
+
+with open("tok_errors.tsv","w") as fp:
+    for err,num in tokenerr.most_common():
+        fp.write(err[0]+"\t"+err[1]+"\t"+str(num)+"\n")
+fp.close()
