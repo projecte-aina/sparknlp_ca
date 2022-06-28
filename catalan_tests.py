@@ -78,12 +78,7 @@ ex_list_all.extend([x.upper() for x in ex_list])
 #     .setSuffixPattern("([A-zÀ-ú]*)(-la|-lo|-les|-los|-hi|-en|-ho|'n|'l|'ls|'m|'t|hi|ho|-LA|-LO|-LES|-LOS|-HI|-EN|-HO|'N|'L|'LS|'M|'T|HI|HO|)(.|,|;|:|!|\?|\)|\", »|)\z")\
 #     .setInfixPatterns(["(\"|«|¿|\(|^)(d'|l'|D'|L')([A-zÀ-ú]*)", "(\"|«|¿|\(|^)(d|p|D|P)(el|els|EL|ELS)$", "(\"|«|¿|\(|^)(a|A)(l|ls|L|LS)$", "([A-zÀ-ú]*)(-la|-lo|-les|-los|-nos|-vos|-te|-hi|-en|-ho|-n'|-l'|'ls|-m'|-t'|-hi|-ho|-LA|-LO|-LES|-LOS|-NOS|-VOS|-TE|-HI|-EN|-HO|-N'|-L'|'LS|-M'|-T'|-HI|-HO|)"]) \
 #     .setExceptions(ex_list_all)
-# ex_list = ["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","dr.","dra.","sr.","sra.","srta.","núm.","st.","sta.","pl.","etc.", "ex."]#,"’", '”', "(", "[", "l'","l’","s'","s’","d’","d'","m’","m'","L'","L’","S’","S'","N’","N'","M’","M'"]
-# ex_list_all = []
-# ex_list_all.extend(ex_list)
-# ex_list_all.extend([x[0].upper() + x[1:] for x in ex_list])
-# ex_list_all.extend([x.upper() for x in ex_list])
-#print(">>>>>>", ex_list_all)
+
 data = spark.createDataFrame([["A partir d'aquest any, la incidència ha anat baixant, passant del 21,1 per cent l'any 1999 al 19,4 per cent de 2000."]]).toDF("text")
 # tokenizer = Tokenizer() \
 #     .setInputCols(['sentence']).setOutputCol('token') \
@@ -91,17 +86,23 @@ data = spark.createDataFrame([["A partir d'aquest any, la incidència ha anat ba
 #     .setInfixPatterns(["^(d'|l'|D'|L')(\w*)", "^(d|p|D|P)(el|els|EL|ELS)?$", "^(a|A)(l|ls|L|LS)?$", "(\w*)(-la|-lo|-les|-los|-nos|-vos|-te|-hi|-en|-ho|-n'|-l'|'ls|-m'|-t'|-hi|-ho|-LA|-LO|-LES|-LOS|-NOS|-VOS|-TE|-HI|-EN|-HO|-N'|-L'|'LS|-M'|-T'|-HI|-HO|)"]) \
 #     .setContextChars(['.', ',', ';', ':', '!', '?', '*', '-', '(', ')', '"', "'"]) \
 #     .setExceptions(ex_list_all)#.fit(data)
-tokenizer = Tokenizer() \
-    .setInputCols(['sentence']).setOutputCol('token')\
-    .setInfixPatterns(["(\w+)(-\w+)", "(l'|l'|s'|s'|d'|d'|m'|m'|L'|L'|S'|S'|N'|N'|M'|M')(\w+)", "(\w+)(\.|,)"])
+# tokenizer = Tokenizer() \
+#     .setInputCols(['sentence']).setOutputCol('token')\
+#     .setInfixPatterns(["(\w+)(-\w+)", "(l'|l'|s'|s'|d'|d'|m'|m'|D'|D'|L'|L'|S'|S'|N'|N'|M'|M')(\w+)", "(\w+)(\.|,)"])
 #tokenizer.setSuffixPattern("([^\s\w]?)([\-hi]*)\z")#"(ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)\z")
 
-##https://nlp.johnsnowlabs.com/api/python/reference/autosummary/sparknlp.annotator.Tokenizer.html
+ex_list = ["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","dr.","dra.","sr.","sra.","srta.","núm.","st.","sta.","pl.","etc.", "ex."]#,"’", '”', "(", "[", "l'","l’","s'","s’","d’","d'","m’","m'","L'","L’","S’","S'","N’","N'","M’","M'"]
+ex_list_all = []
+ex_list_all.extend(ex_list)
+ex_list_all.extend([x[0].upper() + x[1:] for x in ex_list])
+ex_list_all.extend([x.upper() for x in ex_list])
+
+tokenizer = Tokenizer() \
+    .setInputCols(['sentence']).setOutputCol('token')\
+    .setInfixPatterns(["(d|D)(els)","(d|D)(el)","(a|A)(ls)","(a|A)(l)","(p|P)(els)","(p|P)(el)","([A-zÀ-ú])(-[A-zÀ-ú]+)","(d'|D')([A-zÀ-ú]+)","(l'|L')([A-zÀ-ú]+)", "(l'|l'|s'|s'|d'|d'|m'|m'|D'|D'|L'|L'|S'|S'|N'|N'|M'|M')([A-zÀ-ú]+)", "([A-zÀ-ú]+)(\.|,)","([A-zÀ-ú]+)(ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|,|;)+"])\
+    .setExceptions(ex_list_all)
 
 
-# lemmatizer = LemmatizerModel.pretrained("lemma_spacylookup","ca") \
-#     .setInputCols(["form"]) \
-#     .setOutputCol("lemma")
 
 normalizer = Normalizer() \
     .setInputCols(["token"]) \
@@ -122,18 +123,6 @@ pos = PerceptronModel.pretrained("pos_ancora", "ca") \
   .setInputCols(["document", "token"]) \
   .setOutputCol("pos")
 
-
-#Per cargar per primera vegada despres de la conversió des de PyTorch 
-# ner = RoBertaForTokenClassification\
-#   .loadSavedModel('/home/crodrig1/sparknlp/sparknlp_ca/projecte-aina/roberta-base-ca-cased-ner/saved_model/1'.format("roberta-base-ca-cased-ner"), spark)\
-#   .setInputCols(["document",'token'])\
-#   .setOutputCol("ner")\
-#   .setCaseSensitive(True)\
-#   .setMaxSentenceLength(128)
-
-# Despres de save()
-# wget and unzip: 
-# https://github.com/projecte-aina/sparknlp_ca/releases/download/NER_v2/roberta-base-ca-cased-ner_spark_nlp.zip
 ner = RoBertaForTokenClassification.load("./roberta-base-ca-cased-ner_spark_nlp")
 ner.setOutputCol('ner')
 
@@ -141,12 +130,7 @@ ner.setOutputCol('ner')
 nerconverter = NerConverter()\
     .setInputCols(["document", "token", "ner"]) \
     .setOutputCol("entities")#\
-    #.setWhiteList(['ORG','LOC','PER','MISC'])#\
 
-# chunker = Chunker() \
-#    .setInputCols(["sentence", "pos"]) \
-#    .setOutputCol("chunk") \
-#    .setRegexParsers(["<DET>*<NOUN>+", "<PROPN>+"])
 chunker = Chunker() \
    .setInputCols(["sentence", "pos"]) \
    .setOutputCol("chunk") \
@@ -168,10 +152,6 @@ nlpPipeline = Pipeline(stages=[
     chunker
  ])
 
-#nlpPipeline.write().overwrite().save("/home/crodrig1/sparknlp/pipeline_ca")
-
-#Aplicacion de los pipelines y visualización de los resultados
-#text = "Veig a l'home dels Estats Units amb el telescopi."
 text = "A partir d'aquest any, la incidència ha anat baixant, passant del 21,1 per cent l'any 1999 al 19,4 per cent de 2000."#"venien (del delta) a buscar l'aigua. anem-nos-en de la casa. ella."
 spark_df = spark.createDataFrame([[text]]).toDF("text")
 
@@ -180,36 +160,16 @@ spark_df = spark.createDataFrame([[text]]).toDF("text")
 
 empty_df = spark.createDataFrame([['']]).toDF("text")
 pipelineModel = nlpPipeline.fit(empty_df)
-#pipelineModel.write().overwrite().save("/home/crodrig1/sparknlp/pipeline_ca")
 
 result = pipelineModel.transform(spark_df)
 
-#result.select('entities.result').show(truncate=False)
 
-# print("ShowSentence  Embeddings")
-# result.selectExpr("explode(finished_embeddings) as result").show(5, 50)
-
-# import pyspark.sql.functions as F
-# result_df = result.select(F.explode(F.arrays_zip(result.token.result, result.form.result, result.lemma.result, result.pos.result,result.ner.result,result.chunk.result,result.entities.result)).alias("cols")) \
-#                   .select(F.expr("cols['0']").alias("token"),
-#                           F.expr("cols['1']").alias("form"),
-#                           F.expr("cols['2']").alias("lemma"),
-#                           F.expr("cols['3']").alias("pos"),
-#                           F.expr("cols['4']").alias("ner"),
-#                           F.expr("cols['5']").alias("chunk"),
-#                           F.expr("cols['6']").alias("entities")\
-#                               ).toPandas()
-# print(result_df)
 from sparknlp.base import LightPipeline
 
 light_model = LightPipeline(pipelineModel)
 
 
 light_result = light_model.annotate(text)
-
-
-
-#print(list(zip(light_result['token'], light_result['pos'], light_result['ner'], light_result['entities'], light_result['chunk'])))
 
 
 result = pd.DataFrame(zip(light_result['token'], light_result['lemma'], light_result['form'], light_result['pos'], light_result['ner']), columns = ["token", "lemma","form", "pos", "ner"])
@@ -265,18 +225,20 @@ def measure(label,dtok,rd):
         referencet = list(dtok["token"].values())
         testt = list(rd["token"].values())
         for n in range(len(referencet)):
-            if referencet[n] != testt[n]:
-                print(referencet[n],testt[n])
+            try:
+                if referencet[n] != testt[n]:
+                    print(referencet[n],testt[n])
+                    return None
+            except IndexError:
                 return None
     return score
 
-root = "./tests/"
-#from nltk.metrics.scores import accuracy
 token = []
 pos = []
 ner = []
 lemma = []
 tokerrors = []
+malprocessed = []
 m = 0
 for k in list(newdata.keys()):
     sentence, toks = newdata[k]  
@@ -288,9 +250,12 @@ for k in list(newdata.keys()):
     referencet = list(dtok["token"].values())
     testt = list(rd["token"].values())
     for n in range(len(referencet)):
-        if referencet[n] != testt[n]:
-            tokerrors.append((referencet[n],testt[n]))
-            break
+        try:
+            if referencet[n] != testt[n]:
+                tokerrors.append((referencet[n],testt[n]))
+                break
+        except IndexError:
+            malprocessed.append(sentence)
     score = measure("token",dtok,rd)
     if score:
         token.append(score)
