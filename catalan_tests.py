@@ -97,11 +97,23 @@ ex_list_all.extend(ex_list)
 ex_list_all.extend([x[0].upper() + x[1:] for x in ex_list])
 ex_list_all.extend([x.upper() for x in ex_list])
 
+# tokenizer = Tokenizer() \
+#     .setInputCols(['sentence']).setOutputCol('token')\
+#     .setInfixPatterns(["(d|D)(els)","(d|D)(el)","(a|A)(ls)","(a|A)(l)","(p|P)(els)","(p|P)(el)","([A-zÀ-ú])(-[A-zÀ-ú]+)","(d'|D')([A-zÀ-ú]+)","(l'|L')([A-zÀ-ú]+)", "(l'|l'|s'|s'|d'|d'|m'|m'|n'|n'|D'|D'|L'|L'|S'|S'|N'|N'|M'|M')([A-zÀ-ú]+)", "([A-zÀ-ú]+)(\.|,)","([A-zÀ-ú]+)(ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|,|;)+","(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+([0-9A-zÀ-ú]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+","([0-9]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“)+"])\
+#     .setExceptions(ex_list_all)
 tokenizer = Tokenizer() \
     .setInputCols(['sentence']).setOutputCol('token')\
-    .setInfixPatterns(["(d|D)(els)","(d|D)(el)","(a|A)(ls)","(a|A)(l)","(p|P)(els)","(p|P)(el)","([A-zÀ-ú])(-[A-zÀ-ú]+)","(d'|D')([A-zÀ-ú]+)","(l'|L')([A-zÀ-ú]+)", "(l'|l'|s'|s'|d'|d'|m'|m'|D'|D'|L'|L'|S'|S'|N'|N'|M'|M')([A-zÀ-ú]+)", "([A-zÀ-ú]+)(\.|,)","([A-zÀ-ú]+)(ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|,|;)+"])\
+    .setInfixPatterns(["(d|D)(els)","(d|D)(el)","(a|A)(ls)","(a|A)(l)","(p|P)(els)","(p|P)(el)",\
+                           "([A-zÀ-ú])(-[A-zÀ-ú]+)",\
+                            "(d'|D')([A-zÀ-ú]+)","(l'|L')([A-zÀ-ú]+)", \
+                            "(l'|l'|s'|s'|d'|d'|m'|m'|n'|n'|D'|D'|L'|L'|S'|S'|N'|N'|M'|M')([A-zÀ-ú]+)",\
+                            "([A-zÀ-ú]+)(\.|,)",\
+                            "([A-zÀ-ú]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|,|;)+",\
+                            "([A-zÀ-ú]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)",\
+                            "(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+([0-9A-zÀ-ú]+)",\
+                            "([0-9A-zÀ-ú]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+",\
+                            "([0-9]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“)+"])\
     .setExceptions(ex_list_all)
-
 
 
 normalizer = Normalizer() \
@@ -259,14 +271,30 @@ for k in list(newdata.keys()):
     score = measure("token",dtok,rd)
     if score:
         token.append(score)
+        pos.append(measure("pos",dtok,rd))
+        ner.append(measure("ner",dtok,rd))
+        lemma.append(measure("lemma",dtok,rd))
     else:
         m += 1
     #list(dtok['pos'].values())
-    
+from statistics import mean
+
+   
+print("Total phrases to process: ", len(list(newdata.keys())))
+print("Correctly tokenized ",len(token))
+print("Incorrectly tokenized at least on token: ", m)
+print("Percent correct: ",(len(token)+100)/len(list(newdata.keys())))
+
+
+print("average pos: ",mean(pos))
+print("average ner: ",mean(ner))
+print("average lemma: ",mean(lemma))
+
+
 from collections import Counter
 tokenerr = Counter(tokerrors)
+print("Common errors in tokenization")
 print(tokenerr.most_common(20))
-
 with open("tok_errors.tsv","w") as fp:
     for err,num in tokenerr.most_common():
         fp.write(err[0]+"\t"+err[1]+"\t"+str(num)+"\n")
