@@ -16,7 +16,8 @@ spark = sparknlp.start()
 
 
 
-text = """A partir del any 2020, l'incidència delicada als virus "Nocius" o 'nefandos' s'hauria d'abaixar, fent-la passar del 21,1 per cent l'any 1999 al 19,4 per cent de 2000. Parlem-ne."""
+text = """A partir del any 2020, l'incidència delicada als virus "Nocius" (o 'nefandos'), s'hauria d'abaixar, fent-la passar del 21,1 per cent l'any 1999 al 19,4 (per cent de 2000). Parlem-ne."""
+text = "La hipòtesi que avança l'Elisi i que sacsegen frenèticament els cacics de l'RPR és la del complot socialista. Per aquest motiu, i durant 10 minuts, la Sagrada Família mostrarà una imatge inèdita."
 data = spark.createDataFrame([[text]]).toDF("text")
 
 documentAssembler = DocumentAssembler().setInputCol("text").setOutputCol("document")
@@ -32,21 +33,36 @@ ex_list_all.extend(ex_list)
 ex_list_all.extend([x[0].upper() + x[1:] for x in ex_list])
 ex_list_all.extend([x.upper() for x in ex_list])
 
-tokenizer = Tokenizer() \
-    .setInputCols(['sentence']).setOutputCol('token')\
-    .setInfixPatterns(["(d|D)(els)","(d|D)(el)","(a|A)(ls)","(a|A)(l)","(p|P)(els)","(p|P)(el)",\
-                           "([A-zÀ-ú])(-[A-zÀ-ú]+)",\
-                            "(d'|D')([A-zÀ-ú]+)","(l'|L')([A-zÀ-ú]+)", \
-                            "(l'|l'|s'|s'|d'|d'|m'|m'|n'|n'|D'|D'|L'|L'|S'|S'|N'|N'|M'|M')([A-zÀ-ú]+)",\
-                            "([A-zÀ-ú]+)(\.|,)",\
-                            "([A-zÀ-ú]+)(ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|,|;)+",\
-                            "([A-zÀ-ú]+)(ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)",\
-                            "(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+([0-9A-zÀ-ú]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+",\
-                            "([0-9]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“)+"])\
-    .setExceptions(ex_list_all)
+# tokenizer = Tokenizer() \
+#     .setInputCols(['sentence']).setOutputCol('token')\
+#     .setInfixPatterns(["(d|D)(els)","(d|D)(el)","(a|A)(ls)","(a|A)(l)","(p|P)(els)","(p|P)(el)",\
+#                            "([A-zÀ-ú])(-[A-zÀ-ú]+)",\
+#                             "(d'|D')([A-zÀ-ú]+)","(l'|L')([A-zÀ-ú]+)", \
+#                             "(l'|l'|s'|s'|d'|d'|m'|m'|n'|n'|D'|D'|L'|L'|S'|S'|N'|N'|M'|M')([A-zÀ-ú]+)",\
+#                             "([A-zÀ-ú]+)(\.|,)",\
+#                             "([A-zÀ-ú]+)(ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|,|;)+",\
+#                             "([A-zÀ-ú]+)(ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)",\
+#                             "(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+([0-9A-zÀ-ú]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+",\
+#                             "([0-9]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“)+"])\
+#     .setExceptions(ex_list_all)
 
 #.setContextChars([".", ",", ";", ":", "!", "?", "*", "-", "(", ")", "”", '"'])\
-  
+tokenizer = Tokenizer() \
+     .setInputCols(['sentence']).setOutputCol('token')\
+     .setInfixPatterns(["(d|D)(els)","(d|D)(el)","(a|A)(ls)","(a|A)(l)","(p|P)(els)","(p|P)(el)",\
+                            "([A-zÀ-ú_]+)(-[A-zÀ-ú_]+)",\
+                             "(d'|D')([A-zÀ-ú]+)","(l'|L')([A-zÀ-ú_]+)", \
+                             "(l'|l'|s'|s'|d'|d'|m'|m'|n'|n'|D'|D'|L'|L'|S'|S'|N'|N'|M'|M')([A-zÀ-ú_]+)",\
+                             "([A-zÀ-ú]+) (\.|,)",\
+                             "([A-zÀ-ú]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|,|;|:|\?)+",\
+                             "([A-zÀ-ú]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)",\
+                             "(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+([0-9A-zÀ-ú_]+)",\
+                             "([0-9A-zÀ-ú]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+",\
+                             "([0-9]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“)+",\
+                             "([\.|\"|;|:|!|\?|\-|\(|\)|”|“]+)([\.|\"|;|:|!|\?|\-|\(|\)|”|“]+)([\.|\"|;|:|!|\?|\-|\(|\)|”|“]+)",\
+                             "([\.|\"|;|:|!|\?|\-|\(|\)|”|“]+)([\.|\"|;|:|!|\?|\-|\(|\)|”|“])"])\
+     .setContextChars([",(.);'?:"])\
+     .setExceptions(ex_list_all) 
 
 
 pipeline = Pipeline().setStages([documentAssembler, sentencerDL,  tokenizer]).fit(data)
