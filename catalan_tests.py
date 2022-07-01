@@ -91,7 +91,7 @@ data = spark.createDataFrame([["A partir d'aquest any, la incidència ha anat ba
 #     .setInfixPatterns(["(\w+)(-\w+)", "(l'|l'|s'|s'|d'|d'|m'|m'|D'|D'|L'|L'|S'|S'|N'|N'|M'|M')(\w+)", "(\w+)(\.|,)"])
 #tokenizer.setSuffixPattern("([^\s\w]?)([\-hi]*)\z")#"(ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)\z")
 
-ex_list = ["aprox.","pàg.","p.ex.","gen.","feb.","abr.","jul.","set.","oct.","nov.","dec.","dr.","dra.","sr.","sra.","srta.","núm.","st.","sta.","pl.","etc.", "ex."]#,"’", '”', "(", "[", "l'","l’","s'","s’","d’","d'","m’","m'","L'","L’","S’","S'","N’","N'","M’","M'"]
+ex_list = ["aprox\.","pàg\.","p\.ex\.","gen\.","feb\.","abr\.","jul\.","set\.","oct\.","nov\.","dec\.","dr\.","dra\.","sr\.","sra\.","srta\.","núm\.","st\.","sta\.","pl\.","etc\.", "ex\."]#,"’", '”', "(", "[", "l'","l’","s'","s’","d’","d'","m’","m'","L'","L’","S’","S'","N’","N'","M’","M'"]
 ex_list_all = []
 ex_list_all.extend(ex_list)
 ex_list_all.extend([x[0].upper() + x[1:] for x in ex_list])
@@ -118,17 +118,18 @@ tokenizer = Tokenizer() \
      .setInputCols(['sentence']).setOutputCol('token')\
      .setInfixPatterns(["(d|D)(els)","(d|D)(el)","(a|A)(ls)","(a|A)(l)","(p|P)(els)","(p|P)(el)",\
                             "([A-zÀ-ú])(-[A-zÀ-ú]+)",\
-                             "(d'|D')([A-zÀ-ú]+)","(l'|L')([A-zÀ-ú_]+)", \
+                             "(d'|D')([·A-zÀ-ú_]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+","(l'|L')([·A-zÀ-ú_]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+", \
                              "(l'|l'|s'|s'|d'|d'|m'|m'|n'|n'|D'|D'|L'|L'|S'|S'|N'|N'|M'|M')([A-zÀ-ú_]+)",\
-                             "([A-zÀ-ú]+)(\.|,)",\
-                             "([A-zÀ-ú]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|,|;|:|\?)+",\
-                             "([A-zÀ-ú]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)",\
+                             "([A-zÀ-ú·]+)(\.|,)",\
+                             "([A-zÀ-ú·]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|,|;|:|\?)+",\
+                             "([A-zÀ-ú·]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)",\
                              "(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+([0-9A-zÀ-ú_]+)",\
                              "([0-9A-zÀ-ú]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+",\
                              "([0-9]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“)+",\
-                             "([\.|\"|;|:|!|\?|\-|\(|\)|”|“]+)([\.|\"|;|:|!|\?|\-|\(|\)|”|“]+)([\.|\"|;|:|!|\?|\-|\(|\)|”|“]+)"])\
-     .setContextChars([",(.);'?:"])\
-     .setExceptions(ex_list_all) 
+                             "([\.|\"|;|:|!|\?|\-|\(|\)|”|“]+)([\.|\"|;|:|!|\?|\-|\(|\)|”|“]+)([\.|\"|;|:|!|\?|\-|\(|\)|”|“]+)"]) \
+         .setExceptions(ex_list_all).fit(data)
+#     .setContextChars([",(.);'?:"])\
+#     .setExceptions(ex_list_all) 
 
 normalizer = Normalizer() \
     .setInputCols(["token"]) \
