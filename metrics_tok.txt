@@ -1,0 +1,19 @@
+Total phrases to process:  1846
+Correctly tokenized  1363
+Incorrectly tokenized at least on token:  483
+Percent correct:  0.7925243770314193
+average pos:  0.9429578787986673
+average ner:  0.9740947211498138
+average lemma:  0.7996578392253937
+Common errors in tokenization
+[(('"', '.'), 65), (("'", '.'), 64), ((')', '),'), 25), (('"', '",'), 18), (("'", "'."), 11), (('"', '".'), 11), ((')', ').'), 10), (('-', '-,'), 9), ((')', '.'), 8), (("'", "',"), 7), (('1999', '1999,'), 7), (("'ls", "'"), 6), (('Pel', 'P'), 5), (("'n", "'"), 5), (('1998', '1998,'), 5), (('Mas-Colell', 'Mas-Colell,'), 4), (('2000', '2000,'), 4), (('2001', '2001,'), 3), (('PSC-CpC', 'PSC-CpC,'), 3), (("l'", "l'11"), 3)]
+
+Total phrases to process:  1846
+Correctly tokenized  1385
+Incorrectly tokenized at least on token:  461
+Percent correct:  0.804442036836403
+average pos:  0.9428294197271312
+average ner:  0.9739009955200013
+average lemma:  0.7999542658658984
+Common errors in tokenization
+[(("'", '.'), 69), (('"', '.'), 69), ((')', '),'), 24), (('"', '",'), 13), ((')', ').'), 10), ((')', '.'), 9), (('-', '-,'), 9), (('"', '".'), 8), (('1999', '1999,'), 7), (("'", "'."), 6), (("'ls", "'"), 6), (('Pel', 'P'), 5), (("'n", "'"), 5), (('1998', '1998,'), 5), (("'", "',"), 4), (('Mas-Colell', 'Mas-Colell,'), 4), (('2000', '2000,'), 4), (('2001', '2001,'), 3), (('PSC-CpC', 'PSC-CpC,'), 3), (("l'", "l'11"), 3)]
