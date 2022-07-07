@@ -192,3 +192,6 @@ ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/metadata/.part-00000.
 ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/metadata/_SUCCESS
 ca_ancora-ud-train+dev.pos.model/stages/3_POS_e78424bf6fe7/metadata/part-00000
 test_output.csv
+sortida.log
+tok_errors.tsv
+tok_errors.tsv

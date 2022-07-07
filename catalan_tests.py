@@ -83,22 +83,36 @@ ex_list_all.extend([x[0].upper() + x[1:] for x in ex_list])
 ex_list_all.extend([x.upper() for x in ex_list])
 
 
+# tokenizer = Tokenizer() \
+#      .setInputCols(['sentence']).setOutputCol('token')\
+#      .setInfixPatterns(["(d|D)(els)","(d|D)(el)","(a|A)(ls)","(a|A)(l)","(p|P)(els)","(p|P)(el)",\
+#                             "([A-zÀ-ú_@ü]+)(-[A-zÀ-úü_@]+)",\
+#                              "(d'|D')([·A-zÀ-úü@_0-9]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|'|,)+","(l'|L')([·A-zÀ-úÜ_@0-9]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|'|,)+", \
+#                              "(l'|l'|s'|s'|d'|d'|m'|m'|n'|n'|D'|D'|L'|L'|S'|S'|N'|N'|M'|M')([A-zÀ-ú_@0-9]+)",\
+#                              """([A-zÀ-ú·]+)(.|,|")""",\
+#                              "([A-zÀ-ú·]+)('ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|,|;|:|\?|,)+",\
+#                              "([A-zÀ-ú·]+)('ls|'l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)",\
+#                              "(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+([0-9A-zÀ-ú_]+)",\
+#                              "([0-9A-zÀ-ú%]+)(\.|\"|;|:|!|\?|\(|\)|”|“|'|,)+",\
+#                              "(\.|\"|;|:|!|\?|\(|\)|”|“|,)+([0-9]+)(\.|\"|;|:|!|\?|\(|\)|”|“|,)+",\
+#                              "(d'|D'|l'|L')([·A-zÀ-ú@_ü0-9]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|,)", \
+#                              """([\.|"|;|:|!|\?|\(|\)|”|“|,]+)([\.|"|;|:|!|\?|\(|\)|”|“|,]+)"""]) \
+#          .setExceptions(ex_list_all).fit(data)
 tokenizer = Tokenizer() \
      .setInputCols(['sentence']).setOutputCol('token')\
      .setInfixPatterns(["(d|D)(els)","(d|D)(el)","(a|A)(ls)","(a|A)(l)","(p|P)(els)","(p|P)(el)",\
                             "([A-zÀ-ú_@]+)(-[A-zÀ-ú_@]+)",\
                              "(d'|D')([·A-zÀ-ú@_]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|'|,)+","(l'|L')([·A-zÀ-ú_]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|'|,)+", \
                              "(l'|l'|s'|s'|d'|d'|m'|m'|n'|n'|D'|D'|L'|L'|S'|S'|N'|N'|M'|M')([A-zÀ-ú_]+)",\
-                             """([A-zÀ-ú·]+)(\.|,|")""",\
+                             """([A-zÀ-ú·]+)(\.|,|\)|\?|!|;|\:|\"|”)(\.|,|\)|\?|!|;|\:|\"|”)+""",\
                              "([A-zÀ-ú·]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|,|;|:|\?|,)+",\
                              "([A-zÀ-ú·]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)",\
                              "(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+([0-9A-zÀ-ú_]+)",\
-                             "([0-9A-zÀ-ú]+)(\.|\"|;|:|!|\?|\(|\)|”|“|'|,)+",\
+                             "([0-9A-zÀ-ú·]+)(\.|\"|;|:|!|\?|\(|\)|”|“|'|,|%)",\
                              "(\.|\"|;|:|!|\?|\-|\(|\)|”|“|,)+([0-9]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|,)+",\
                              "(d'|D'|l'|L')([·A-zÀ-ú@_]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|,)", \
-                             """([\.|"|;|:|!|\?|\-|\(|\)|”|“|,]+)([\.|"|;|:|!|\?|\-|\(|\)|”|“|,]+)"""]) \
+                             "([\.|\"|;|:|!|\?|\-|\(|\)|”|“|,]+)([\.|\"|;|:|!|\?|\-|\(|\)|”|“|,]+)"]) \
          .setExceptions(ex_list_all).fit(data)
-
 
 normalizer = Normalizer() \
     .setInputCols(["token"]) \
@@ -157,7 +171,7 @@ spark_df = spark.createDataFrame([[text]]).toDF("text")
 empty_df = spark.createDataFrame([['']]).toDF("text")
 pipelineModel = nlpPipeline.fit(empty_df)
 
-#pipelineModel.save("/home/crodrig1/sparknlp/pipeline_md_ca")
+pipelineModel.save("/home/crodrig1/sparknlp/pipeline_md_ca")
 
 result = pipelineModel.transform(spark_df)
 
@@ -250,6 +264,9 @@ for k in list(newdata.keys()):
     for n in range(len(referencet)):
         try:
             if referencet[n] != testt[n]:
+                if n != 0:
+                    print("previous:")
+                    print((referencet[n-1],testt[n-1]))
                 tokerrors.append((referencet[n],testt[n]))
                 break
         except IndexError:

@@ -17,7 +17,7 @@ spark = sparknlp.start()
 
 
 #text = """A partir del any 2020, l'incidència delicada als virus "Nocius" (o 'nefandos'), s'hauria d'abaixar, fent-la passar del 21,1 per cent l'any 1999 al 19,4 (per cent de 2000). Parlem-ne."""
-text = """La hipòtesi que avança l'Elisi i que sacsegen frenèticament els cacics de d'UB-CRP és la del complot socialista. Per aquest motiu, i durant 10 minuts, 1990, la Sagrada Família "mostrarà una imatge aclaparadora". """
+text = """La hipòtesi que avança l'Elisi i que sacsegen frenèticament els cacics de d'jean-marc és la del complot (socialista). Cal fer-les amb il·lusió, i durant el 10%, 1990, la Sagrada Família "mostrarà una imatge aclaparadora". """
 data = spark.createDataFrame([[text]]).toDF("text")
 
 documentAssembler = DocumentAssembler().setInputCol("text").setOutputCol("document")
@@ -39,11 +39,11 @@ tokenizer = Tokenizer() \
                             "([A-zÀ-ú_@]+)(-[A-zÀ-ú_@]+)",\
                              "(d'|D')([·A-zÀ-ú@_]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|'|,)+","(l'|L')([·A-zÀ-ú_]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|'|,)+", \
                              "(l'|l'|s'|s'|d'|d'|m'|m'|n'|n'|D'|D'|L'|L'|S'|S'|N'|N'|M'|M')([A-zÀ-ú_]+)",\
-                             """([A-zÀ-ú·]+)(\.|,|)""",\
+                             """([A-zÀ-ú·]+)(\.|,|\)|\?|!|;|\:|\"|”)(\.|,|\)|\?|!|;|\:|\"|”)+""",\
                              "([A-zÀ-ú·]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|,|;|:|\?|,)+",\
                              "([A-zÀ-ú·]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)",\
                              "(\.|\"|;|:|!|\?|\-|\(|\)|”|“|')+([0-9A-zÀ-ú_]+)",\
-                             "([0-9A-zÀ-ú]+)(\.|\"|;|:|!|\?|\(|\)|”|“|'|,)+",\
+                             "([0-9A-zÀ-ú·]+)(\.|\"|;|:|!|\?|\(|\)|”|“|'|,|%)",\
                              "(\.|\"|;|:|!|\?|\-|\(|\)|”|“|,)+([0-9]+)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|,)+",\
                              "(d'|D'|l'|L')([·A-zÀ-ú@_]+)('l|'ns|'t|'m|'n|-les|-la|-lo|-li|-los|-me|-nos|-te|-vos|-se|-hi|-ne|-ho)(\.|\"|;|:|!|\?|\-|\(|\)|”|“|,)", \
                              "([\.|\"|;|:|!|\?|\-|\(|\)|”|“|,]+)([\.|\"|;|:|!|\?|\-|\(|\)|”|“|,]+)"]) \
